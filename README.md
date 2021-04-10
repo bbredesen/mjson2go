@@ -2,33 +2,48 @@
 
 `mjson2go` is a tool that converts JSON to parameterized Go code usable by the MongoDB driver.
 
-Writing a or converting a MongoDB pipeline in Go is awkward. Here is a very simple aggregation pipeline in JSON:
+Writing a or converting a MongoDB pipeline in Go is awkward, with lots of nested braces. 
+Here is a very simple aggregation pipeline in JSON:
 
 ```json
 [
-    {"$match" : {
-        "postType" : "Article"
-    }},
-    {"$group" : {
-        "_id" : {"user": "$userId"},
-        "allPosts": { "$push" : "$$ROOT" },
-        "count" : { "$sum" : 1 }
-    }}
+    {
+        "$match" : {
+            "postType" : "Article"
+        }
+    },
+    {
+        "$group" : {
+            "_id" : {"user": "$userId"},
+            "allPosts": { "$push" : "$$ROOT" },
+            "count" : { "$sum" : 1 }
+        }
+    }
 ]
 ```
 
-Translated to Go, this becomes:
+Translated to Go (and `go fmt`-ed), this becomes:
 
 ```go
 pipeline := bson.A{
-    bson.D{{"$match", 
-        bson.D{{"postType", "Article"}},
+    bson.D{
+        { "$match", bson.D{
+            { "postType", "Article" }
+        },
     }},
-    bson.D{{"$group", bson.D{
-        {"_id", bson.D{{"user", "$userId"}}},
-        {"allPosts", bson.D{{"$push", "$$ROOT"}}},
-        {"count", bson.D{{"$sum", 1}}},
-    }}},
+    bson.D{
+        { "$group", bson.D{
+                { "_id", bson.D{
+                    {"user", "$userId"}
+                }},
+                {"allPosts", bson.D{
+                    {"$push", "$$ROOT"}
+                }},
+                {"count", bson.D{
+                    {"$sum", 1}
+                }},
+        }
+    }},
 }
 ```
 

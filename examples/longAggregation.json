@@ -1,0 +1,154 @@
+[
+    {"$match": {
+            "gameId": "%%gameId%int",
+            "typeCode": 517,
+            "pretend": "%%startDate%time.Time"
+        }
+    },
+    {
+        "$lookup": {
+            "from": "shifts",
+            "let": {
+                "gameId": "$gameId",
+                "player": "$player",
+                "time": "$startTime"
+            },
+            "pipeline": [
+                {
+                    "$match": {
+                        "$expr": {
+                            "$and": [
+                                {
+                                    "$eq": [
+                                        "$gameId",
+                                        "$$gameId"
+                                    ]
+                                },
+                                {
+                                    "$ne": [
+                                        "$player.position",
+                                        "G"
+                                    ]
+                                },
+                                {
+                                    "$eq": [
+                                        "$startTime.period",
+                                        "$$time.period"
+                                    ]
+                                },
+                                {
+                                    "$lte": [
+                                        "$startTime.seconds",
+                                        "$$time.seconds"
+                                    ]
+                                },
+                                {
+                                    "$gt": [
+                                        "$endTime.seconds",
+                                        "$$time.seconds"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$addFields": {
+                        "isTeammate": {
+                            "$eq": [
+                                "$player.team.teamId",
+                                "$$player.team.teamId"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$isTeammate",
+                        "players": {
+                            "$push": "$$ROOT"
+                        }
+                    }
+                }
+            ],
+            "as": "othersOnIce"
+        }
+    },
+    {
+        "$addFields": {
+            "teamOnIce": {
+                "$first": {
+                    "$filter": {
+                        "input": "$othersOnIce",
+                        "as": "others",
+                        "cond": "$$others._id"
+                    }
+                }
+            },
+            "oppOnIce": {
+                "$first": {
+                    "$filter": {
+                        "input": "$othersOnIce",
+                        "cond": {
+                            "$not": "$$this._id"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        "$addFields": {
+            "teamSkaters": {
+                "$size": {
+                    "$ifNull": [
+                        "$teamOnIce.players",
+                        []
+                    ]
+                }
+            },
+            "oppSkaters": {
+                "$size": {
+                    "$ifNull": [
+                        "$oppOnIce.players",
+                        []
+                    ]
+                }
+            }
+        }
+    },
+    {
+        "$group": {
+            "_id": {
+                "teamStrength": "$teamSkaters",
+                "oppStrength": "$oppSkaters"
+            },
+            "shifts": {
+                "$push": {
+                    "_id": "$$ROOT._id",
+                    "teamStrength": "$teamSkaters",
+                    "oppStrength": "$oppSkaters"
+                }
+            }
+        }
+    },
+    {
+        "$unwind": {
+            "path": "$shifts",
+            "preserveNullAndEmptyArrays": false
+        }
+    },
+    {
+        "$replaceRoot": {
+            "newRoot": "$shifts"
+        }
+    },
+    {
+        "$merge": {
+            "into": "shifts",
+            "on": "_id",
+            "whenMatched": "merge",
+            "whenNotMatched": "discard"
+        }
+    }
+]

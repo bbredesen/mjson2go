@@ -1,0 +1,6 @@
+[
+    {"$match": {
+        "keyA" :  1234,
+        "keyB" : "aString"
+    }}
+]

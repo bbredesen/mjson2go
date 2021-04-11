@@ -94,15 +94,17 @@ func GetAggregation(dateParam time.Time, intParam int) bson.D {
 ```
 
 ## Field specification
-All parts of the parameter specifier are optional, though you must at least provide "%%" to create a parameter with all default values.
+All parts of the parameter specifier are optional, though you must at least provide a name after "%%" to create a parameter with default values.
 
 `"%%<name>%<type>%<order>"`
 
-`<name>` - The parameter name. Defaults to `p0, p1` etc. in source order
+`<name>` - The parameter name. Required.
 
 `<type>` - The Go type specification. Defaults to `string`. Non-primitive types will be imported to the file via goimports
 
-`<order>` - Numeric key for the order of paramters in the function specification. Need not be sequential. The number will be used as provided in the default parameter name, if not otherwise specified. (i.e., 10, 20, and 30 will produce `p10, p20, p30`)
+`<order>` - Numeric key for the order of paramters in the function specification. Need not be sequential.
+
+For example: `%%articleType` (defaults to string), `%%userId%int`, `%%beforeDate%time.Time`, or `%%mongoKey%primitive.ObjectID`
 
 ## Command Line Flags
 

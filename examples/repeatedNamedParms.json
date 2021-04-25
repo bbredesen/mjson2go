@@ -1,0 +1,16 @@
+[
+  {
+    "$match": {
+      "firstField": "%%first",
+      "secondField": "%%second",
+      "thirdField": "%%",
+      "comment": "Should produce first, second, p2 string params, in that order"
+    }
+  },
+  {
+    "$match": {
+      "secondFieldAppearsAgain": "%%second",
+      "comment": "Param second should still be at index 1"
+    }
+  }
+]

@@ -27,7 +27,7 @@ func init() {
 	flag.StringVar(&packageName, "package", "", "the Go package name to produce code for; defaults to the GOPACKAGE environment variable, or 'main' if not set")
 	flag.BoolVar(&verbose, "v", false, "more verbose output (to stderr)")
 	flag.StringVar(&outFilename, "out", "", "filename to write to instead of stdout")
-	flag.BoolVar(&fixSource, "fix", false, "cleans up common JSON syntax errors comming from MongoDB Compass; see README.md for details")
+	flag.BoolVar(&fixSource, "fix", true, "cleans up common JSON syntax errors comming from MongoDB Compass; see README.md for details")
 	flag.BoolVar(&backup, "backup", false, "when used with -fix, writes a copy of the original file before attempting to fix and format")
 }
 
@@ -37,7 +37,7 @@ func main() {
 	if packageName == "" {
 		packageName = os.Getenv("GOPACKAGE")
 	}
-	if packageName == "" {
+	if packageName == "" { // if packageName is still empty
 		packageName = "main"
 	}
 

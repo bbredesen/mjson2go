@@ -1,0 +1,15 @@
+[
+  {
+    "$match": {
+      "firstField": "%%first%int%2",
+      "secondField": "%%second%int%1",
+      "comment": "Should produce first, second int params, in reverse order"
+    }
+  },
+  {
+    "$match": {
+      "secondFieldAppearsAgain": "%%first%string",
+      "comment": "Type conflict should be caught"
+    }
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "$match": {
+      "firstField": "%%first%int%2",
+      "secondField": "%%second%int%1",
+      "thirdField": "%%third",
+      "comment": "Should produce (second int, first int, third string)"
+    }
+  }
+]

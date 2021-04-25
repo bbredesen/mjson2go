@@ -1,0 +1,7 @@
+[
+    {"$match": {
+        "keyA" :  1234,
+        "keyB" : new Date("2021-01-01"),
+        "comment" : "Using -fix will cause an error, because of the 'new Date' above."
+    }}
+]

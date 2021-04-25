@@ -115,7 +115,7 @@ Corrects three common JSON syntax errors that Compass (and Javascript) may allow
 * Change single-quote strings to double quotes
 * Remove trailing commas after the last element of an array or object
 
-`-fix` also formats and indents the resulting source with two spaces, and overwrites the original source file. `-fix` defaults to true, so you will have to explicitly say -fix=false to not fix potentila source errors.
+`-fix` also formats and indents the resulting source with two spaces, and overwrites the original source file. `-fix` defaults to true, so you will have to explicitly say -fix=false to not fix (potential) source errors.
 
 ### `-package=pkgname`
 By default, the generated code is in the main package or the value of the `$GOPACAKGE` environment variable (which is set by `go generate`). Setting this flag will override the default name.

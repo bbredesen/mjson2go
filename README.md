@@ -2,7 +2,7 @@
 
 `mjson2go` is a tool that converts JSON to parameterized Go code usable by the MongoDB driver.
 
-Writing a or converting a MongoDB pipeline in Go is awkward, with lots of nested braces. 
+Developing a MongoDB pipeline in Go is awkward, with lots of double braces and nested `bson.D` or `bson.A`s. 
 Here is a very simple aggregation pipeline in JSON:
 
 ```json
@@ -14,7 +14,7 @@ Here is a very simple aggregation pipeline in JSON:
     },
     {
         "$group" : {
-            "_id" : {"user": "$userId"},
+            "_id" : { "user" : "$userId" },
             "allPosts": { "$push" : "$$ROOT" },
             "count" : { "$sum" : 1 }
         }
@@ -22,7 +22,7 @@ Here is a very simple aggregation pipeline in JSON:
 ]
 ```
 
-Translated to Go (and `go fmt`-ed), this becomes:
+Translated to Go, this becomes:
 
 ```go
 pipeline := bson.A{
@@ -64,7 +64,7 @@ go get github.com/bbredesen/mjson2go
 mjson2go -out=pipeline.go aggregation.json otherAggregation.json
 ```
 
-The command above will produce Go source containing functions `GetAggregation()` and `GetOtherAggregation()`. If no files are provided, it will read from stdin. If a directory name is provided, it will process all files ending in .json in that directory.
+The command above will produce Go source containing functions `GetAggregation()` and `GetOtherAggregation()`. If no files are provided, it will read from stdin and write to stdout. If a directory name is provided, it will process all files ending in .json in that directory.
 
 ## Via `go generate`
 The tool will automatically put the resulting code in the same package as the `go:generate` annotation:
@@ -74,7 +74,7 @@ package somepkg
 //go:generate mjson2go -out=pipeline.go aggregations/
 ```
 
-Note that `go generate` does not pass commands through a shell and thus will not expand globs.
+Note that `go generate` does not pass commands through a shell and will not expand globs.
 
 # Pipeline Parameters
 
@@ -94,17 +94,23 @@ func GetAggregation(dateParam time.Time, intParam int) bson.D {
 ```
 
 ## Field specification
-All parts of the parameter specifier are optional, though you must at least provide a name after "%%" to create a parameter with default values.
+All parts of the parameter specifier are optional, including the parameter name. You can simply write "%%" to create a parameter with all default values. Parameter names can be repeated to reuse the same value in the output.
 
 `"%%<name>%<type>%<order>"`
 
-`<name>` - The parameter name. Defaults to `p<index>` (p0, p1, etc.). Note that the tool will not stop you from using a Go keyword as a name.
+`<name>` - The parameter name. Defaults to p\<index\> (p0, p1, etc.). Note that the tool will not stop you from using a Go keyword as a name.
 
-`<type>` - The Go type specification. Defaults to `string`. Non-primitive types will be imported to the file via goimports
+`<type>` - The Go type specification. Defaults to string. The tool will run goimports after code generation and attempt to import non-primitive types.
 
-`<order>` - Numeric key for the order of paramters in the function specification. Need not be sequential.
+`<order>` - Numeric key for the order of paramters in the function specification. Need not be sequential. Parameters default to source order, with the caveat that all explicitly ordered parameters are added first.
 
-For example: `%%articleType` (defaults to string), `%%userId%int`, `%%beforeDate%time.Time`, or `%%mongoKey%primitive.ObjectID`
+Usage examples: 
+
+- `"%%articleType"` (defaults to string)
+- `"%%userId%int"`
+- `"%%beforeDate%time.Time"`
+- `"%%mongoKey%primitive.ObjectID"`
+- `"%%"`
 
 ## Command Line Flags
 
@@ -115,7 +121,9 @@ Corrects three common JSON syntax errors that Compass (and Javascript) may allow
 * Change single-quote strings to double quotes
 * Remove trailing commas after the last element of an array or object
 
-`-fix` also formats and indents the resulting source with two spaces, and overwrites the original source file. `-fix` defaults to true, so you will have to explicitly say -fix=false to not fix (potential) source errors.
+`-fix` also formats and indents the resulting source with two spaces, and overwrites the original source file.
+
+Defaults to true, so you will have to explicitly pass -fix=false to not fix (potential) source errors.
 
 ### `-package=pkgname`
 By default, the generated code is in the main package or the value of the `$GOPACAKGE` environment variable (which is set by `go generate`). Setting this flag will override the default name.
@@ -125,5 +133,5 @@ By default, the generated code is in the main package or the value of the `$GOPA
 
 ### `-out=filename.go`
 Write the output to the provided filename. By default, output goes to `stdout` on the command line, or into 
-`<current file>_mjson.go` if called via `go generate`. WARNING: `goimports` will not be run if output goes to 
+`<current file>_mjson.go` if called via `go generate`. NOTE: `goimports` will not be run if output goes to 
 `stdout`

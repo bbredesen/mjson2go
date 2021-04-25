@@ -33,7 +33,11 @@ func fixSourceFile(filename string) {
 	b = fixSourceErrors(b)
 
 	buf := bytes.NewBuffer([]byte{})
-	json.Indent(buf, b, "", "  ")
+	err = json.Indent(buf, b, "", "  ")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: (%s) Could not format JSON after fixing source\n", filename)
+		os.Exit(2)
+	}
 
 	ioutil.WriteFile(filename, buf.Bytes(), 0666)
 }

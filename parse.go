@@ -168,7 +168,7 @@ func handleParam(paramString string) string {
 
 	if len(parts) == 1 {
 		if parts[0] == "" { // "%%"
-			parts = []string{fmt.Sprint("p", len(paramsMap)), "string", fmt.Sprint(len(paramsMap))}
+			parts = []string{fmt.Sprint("p", len(paramsMap)), "string"}
 		} else { // "%%paramName"
 			parts = append(parts, "string")
 		}
@@ -179,7 +179,6 @@ func handleParam(paramString string) string {
 	if len(parts) == 2 { // %%paramName%string
 		parts = append(parts, fmt.Sprint(len(paramsMap)+1024)) // Add 1024 to avoid collisions with user-indexed params
 	} else if parts[2] == "" {
-		// Yes, this is an unneccesary conversion from int to string and back, but it makes the following code more readable
 		parts[2] = fmt.Sprint(len(paramsMap) + 1024)
 	}
 
@@ -191,7 +190,20 @@ func handleParam(paramString string) string {
 		os.Exit(1)
 	}
 
-	paramsMap[parts[0]] = spec
+	// Before checking/setting the index, find out if this is a repeated parameter
+	if existingSpec, ok := paramsMap[spec.name]; ok {
+		if existingSpec.typ != spec.typ {
+			fmt.Fprintf(os.Stderr,
+				"ERROR: Parameter type conflict. Parameter %s (type %s) was previously declared as type %s",
+				spec.name, spec.typ, existingSpec.typ,
+			)
+			os.Exit(2)
+		}
+
+	} else {
+		paramsMap[spec.name] = spec
+	}
+
 	return spec.name
 }
 

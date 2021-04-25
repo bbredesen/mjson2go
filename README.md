@@ -98,7 +98,7 @@ All parts of the parameter specifier are optional, though you must at least prov
 
 `"%%<name>%<type>%<order>"`
 
-`<name>` - The parameter name. Required.
+`<name>` - The parameter name. Defaults to `p<index>` (p0, p1, etc.). Note that the tool will not stop you from using a Go keyword as a name.
 
 `<type>` - The Go type specification. Defaults to `string`. Non-primitive types will be imported to the file via goimports
 
@@ -122,7 +122,9 @@ By default, the generated code is in the main package or the value of the `$GOPA
 (Slightly) more verbose output to `stderr`.
 
 ### `-out=filename.go`
-Write the output to the provided filename. By default, output goes to `stdout` on the command line, or into `<current file>_mjson.go` if called via `go generate`
+Write the output to the provided filename. By default, output goes to `stdout` on the command line, or into 
+`<current file>_mjson.go` if called via `go generate`. WARNING: `goimports` will not be run if output goes to 
+`stdout`
 
 # TODO
 * Better/more error handling

@@ -194,7 +194,7 @@ func handleParam(paramString string) string {
 	if existingSpec, ok := paramsMap[spec.name]; ok {
 		if existingSpec.typ != spec.typ {
 			fmt.Fprintf(os.Stderr,
-				"ERROR: Parameter type conflict. Parameter %s (type %s) was previously declared as type %s",
+				"ERROR: Parameter type conflict. Parameter %s (type %s) was previously declared as type %s\n",
 				spec.name, spec.typ, existingSpec.typ,
 			)
 			os.Exit(2)

@@ -166,19 +166,18 @@ func handleParam(paramString string) string {
 	var err error
 	parts := strings.Split(paramString[2:], "%")
 
-	if len(parts) == 0 { // "%%"
-		fmt.Fprintln(os.Stderr, "ERROR: No parameters provided to variable name (%%...)")
-		os.Exit(1)
-	}
-
-	if len(parts) == 1 { // "%%paramName"
-		parts = append(parts, "string")
+	if len(parts) == 1 {
+		if parts[0] == "" { // "%%"
+			parts = []string{fmt.Sprint("p", len(paramsMap)), "string", fmt.Sprint(len(paramsMap))}
+		} else { // "%%paramName"
+			parts = append(parts, "string")
+		}
 	} else if parts[1] == "" {
 		parts[1] = "string"
 	}
 
 	if len(parts) == 2 { // %%paramName%string
-		parts = append(parts, fmt.Sprint(len(paramsMap)+1024))
+		parts = append(parts, fmt.Sprint(len(paramsMap)+1024)) // Add 1024 to avoid collisions with user-indexed params
 	} else if parts[2] == "" {
 		// Yes, this is an unneccesary conversion from int to string and back, but it makes the following code more readable
 		parts[2] = fmt.Sprint(len(paramsMap) + 1024)

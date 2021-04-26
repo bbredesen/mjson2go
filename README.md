@@ -1,9 +1,8 @@
 # mjson2go
 
-`mjson2go` is a tool that converts JSON to parameterized Go code usable by the MongoDB driver.
+`mjson2go` is a tool that generates parameterized Go code usable by the MongoDB driver from a JSON pipeline source.
 
-Developing a MongoDB pipeline in Go is awkward, with lots of double braces and nested `bson.D` or `bson.A`s. 
-Here is a very simple aggregation pipeline in JSON:
+Developing a MongoDB pipeline in Go is awkward, with lots of double braces and nested `bson.D` or `bson.A`s. Here is a very simple aggregation pipeline in JSON:
 
 ```json
 [
@@ -47,7 +46,7 @@ pipeline := bson.A{
 }
 ```
 
-`mjson2go` allows you to export an aggregation pipeline from MongoDB Compass and/or directly develop your pipeline in JSON, instead of trying to copy, paste into Go source, correct syntax, match braces, etc. etc.
+`mjson2go` allows you to export an aggregation pipeline from MongoDB Compass and/or directly develop your pipeline in JSON, instead of trying to copy and paste, translate into Go source, correct syntax, match braces, etc. etc.
 
 `mjson2go` can be used from the command line or, ideally, via `go generate`. The tool produces a Go source file with a "Get___" function that returns a `bson.D` or `bson.A`, and allows you to specify input parameters from your code.
 
@@ -56,7 +55,7 @@ Finally, the tool will format and run `goimports` on the resulting source file.
 # Usage
 
 ```
-go get github.com/bbredesen/mjson2go
+go install github.com/bbredesen/mjson2go@latest
 ```
 
 ## Via the Command Line
@@ -110,7 +109,7 @@ Usage examples:
 - `"%%userId%int"`
 - `"%%beforeDate%time.Time"`
 - `"%%mongoKey%primitive.ObjectID"`
-- `"%%"`
+- `"%%"` (defaults to string with a generated name)
 
 ## Command Line Flags
 

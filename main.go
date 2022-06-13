@@ -62,7 +62,7 @@ func main() {
 	outString := fmt.Sprintf(fileTemplate, strings.TrimLeft(commandLine, " "), packageName)
 
 	for _, filename := range inFilenames {
-		outString += buildFunction(filename)
+		outString += buildFunctionFromFile(filename)
 	}
 
 	output, err := format.Source([]byte(outString))

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -29,7 +30,7 @@ type paramSpec struct {
 
 var paramsMap map[string]paramSpec
 
-func buildFunction(filename string) string {
+func buildFunctionFromFile(filename string) string {
 	var inFile *os.File
 
 	var err error
@@ -51,17 +52,27 @@ func buildFunction(filename string) string {
 	bytes, err := ioutil.ReadAll(inFile)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "WARNING: (%s) could not read an input file: %s\n", filename, err)
-		return fmt.Sprintf("ERROR COULD NOT READ %s", filename)
+		fmt.Fprintf(os.Stderr, "ERROR: (%s) could not read an input file: %s\n", filename, err)
+		os.Exit(1)
 	}
 
+	inPath := strings.Split(filename, string(os.PathSeparator))
+	inFileBase := strings.Split(inPath[len(inPath)-1], ".")[0]
+	fnName := "Get" + strings.Title(inFileBase) //strings.ToLower(fNameParts[0]))
+
+	rval, err := buildFunction(bytes, fnName)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: (%s) failed to build aggregation function: %s\n", filename, err)
+		os.Exit(1)
+	}
+	return rval
+}
+
+func buildFunction(bytes []byte, fnName string) (string, error) {
 	result := gjson.ParseBytes(bytes)
 
 	if !result.Exists() {
-		fmt.Fprintf(os.Stderr, "WARNING: (%s) could not parse a result\n", filename)
-		fmt.Fprintf(os.Stderr, "Hint: Malformed JSON or embedded JS, such as 'new Date(...)' will commonly cause this problem.")
-		// TODO: rollback of backup files
-		os.Exit(1)
+		return "", errors.New("Could not parse JSON - Malformed JSON or embedded JS, such as 'new Date(...)' will commonly cause this problem.")
 	}
 
 	body := recursiveParseAny(result)
@@ -72,7 +83,7 @@ func buildFunction(filename string) string {
 	} else if result.IsObject() {
 		returnType = "bson.D"
 	} else {
-		fmt.Fprintf(os.Stderr, "WARNING: (%s) Root of JSON was not an object or array", filename)
+		return "", errors.New("Root of JSON was not an object or array")
 	}
 
 	// Convert the vars to a map, to eliminate duplicates
@@ -86,15 +97,7 @@ func buildFunction(filename string) string {
 		}
 	}
 
-	fnName := funcName
-
-	if fnName == "" {
-		inPath := strings.Split(filename, string(os.PathSeparator))
-		inFileBase := strings.Split(inPath[len(inPath)-1], ".")[0]
-		fnName = "Get" + strings.Title(inFileBase) //strings.ToLower(fNameParts[0]))
-	}
-
-	return fmt.Sprintf(funcTemplate, fnName, fnParams, returnType, body)
+	return fmt.Sprintf(funcTemplate, fnName, fnParams, returnType, body), nil
 }
 
 func recursiveParseArray(result []gjson.Result) string {

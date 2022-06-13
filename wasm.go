@@ -17,11 +17,11 @@ func wrap_fixSourceErrors() js.Func {
 		input := args[0].String()
 
 		output := fixSourceErrors([]byte(input))
-		output, err := format.Source(output)
+		// output, err := format.Source(output)
 
-		if err != nil {
-			fmt.Println("WARNING: Could not format output: ", err.Error())
-		}
+		// if err != nil {
+		// 	fmt.Println("WARNING: Could not format output: ", err.Error())
+		// }
 
 		return string(output)
 	})

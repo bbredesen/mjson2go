@@ -18,14 +18,14 @@ var (
 func fixSourceFile(filename string) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: (%s) Could not read source file for fixing\n", filename)
+		fmt.Fprintf(os.Stderr, "ERROR: (%s) Could not read source file for fixing: %s\n", filename, err.Error())
 		os.Exit(2)
 	}
 
 	if backup {
 		err = ioutil.WriteFile(filename+".backup", b, 0666)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: (%s) Could not write backup file before fixing source\n", filename)
+			fmt.Fprintf(os.Stderr, "ERROR: (%s) Could not write backup file before fixing source: %s\n", filename, err.Error())
 			os.Exit(2)
 		}
 	}
@@ -35,7 +35,7 @@ func fixSourceFile(filename string) {
 	buf := bytes.NewBuffer([]byte{})
 	err = json.Indent(buf, b, "", "  ")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: (%s) Could not format JSON after fixing source\n", filename)
+		fmt.Fprintf(os.Stderr, "ERROR: (%s) Could not format JSON after fixing source: %s\n", filename, err.Error())
 		os.Exit(2)
 	}
 

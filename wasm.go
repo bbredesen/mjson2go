@@ -1,6 +1,5 @@
 //go:build js
 
-//go:generate GOOS=js GOARCH=wasm go build -o mjson2go.wasm
 package main
 
 import (

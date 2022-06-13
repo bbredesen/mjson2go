@@ -3,10 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"go/format"
 	"os"
-	"os/exec"
 	"strings"
+	"syscall/js"
 )
 
 var (
@@ -32,78 +31,10 @@ func init() {
 }
 
 func main() {
-	flag.Parse()
+	js.Global().Set("fixSourceErrors", wrap_fixSourceErrors())
+	js.Global().Set("buildFunction", wrap_buildFunction())
 
-	if packageName == "" {
-		packageName = os.Getenv("GOPACKAGE")
-	}
-	if packageName == "" { // if packageName is still empty
-		packageName = "main"
-	}
-
-	processFileNames()
-
-	if verbose {
-		if len(inFilenames) == 1 {
-			if inFilenames[0] == "-" {
-				fmt.Fprint(os.Stderr, "Reading from stdin\n")
-			} else {
-				fmt.Fprintf(os.Stderr, "Reading from %s\n", inFilenames[0])
-			}
-		} else {
-			fmt.Fprintf(os.Stderr, "Reading from %d files\n", len(inFilenames))
-		}
-	}
-
-	commandLine := ""
-	for _, arg := range os.Args {
-		commandLine = commandLine + " " + arg
-	}
-	outString := fmt.Sprintf(fileTemplate, strings.TrimLeft(commandLine, " "), packageName)
-
-	for _, filename := range inFilenames {
-		outString += buildFunctionFromFile(filename)
-	}
-
-	output, err := format.Source([]byte(outString))
-
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "WARNING: Could not gofmt output: ", err.Error())
-		output = []byte(outString)
-	}
-
-	var outFile *os.File
-	if outFilename == "" {
-		outFilename = "<stdout>"
-		outFile = os.Stdout
-	} else {
-		var err error
-		outFile, err = os.OpenFile(outFilename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
-		defer outFile.Close()
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	if verbose {
-		fmt.Fprintln(os.Stderr, "Writing to", outFilename)
-	}
-	_, err = outFile.Write(output)
-	if err != nil {
-		panic(err)
-	}
-	if outFilename != "<stdout>" {
-		outFile.Close()
-		// if flag "pls"...
-		cmd := exec.Command("goimports", "-w", outFilename)
-		cmd.Stderr = os.Stderr
-
-		goimpErr := cmd.Run()
-
-		if goimpErr != nil {
-			fmt.Fprintf(os.Stderr, "Failed to process imports for %s: %s\n", outFilename, goimpErr.Error())
-		}
-	}
+	<-make(chan bool) // wait on a channel to block exiting
 }
 
 func processFileNames() {

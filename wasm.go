@@ -1,5 +1,6 @@
 //go:build js
 
+//go:generate GOOS=js GOARCH=wasm go build -o mjson2go.wasm
 package main
 
 import (
@@ -33,18 +34,18 @@ func wrap_buildFunction() js.Func {
 			return "Invalid number of arguments passed"
 		}
 
-		input, fnName := args[0].Bytes(), args[1].String()
+		input, fnName := args[0].String(), args[1].String()
 
-		output, err := buildFunction(input, fnName)
+		output, err := buildFunction([]byte(input), fnName)
 		if err != nil {
 			fmt.Println("WARNING: Could not build function: ", err.Error())
 		}
 
-		output, err = format.Source(output)
+		outputBytes, err := format.Source([]byte(output))
 		if err != nil {
 			fmt.Println("WARNING: Could not format output: ", err.Error())
 		}
 
-		return string(output)
+		return string(outputBytes)
 	})
 }

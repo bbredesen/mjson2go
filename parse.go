@@ -47,8 +47,6 @@ func buildFunctionFromFile(filename string) string {
 
 	}
 
-	paramsMap = make(map[string]paramSpec)
-
 	bytes, err := ioutil.ReadAll(inFile)
 
 	if err != nil {
@@ -69,6 +67,8 @@ func buildFunctionFromFile(filename string) string {
 }
 
 func buildFunction(bytes []byte, fnName string) (string, error) {
+	paramsMap = make(map[string]paramSpec)
+
 	result := gjson.ParseBytes(bytes)
 
 	if !result.Exists() {

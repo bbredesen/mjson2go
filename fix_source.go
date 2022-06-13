@@ -32,21 +32,29 @@ func fixSourceFile(filename string) {
 
 	b = fixSourceErrors(b)
 
+	// buf := bytes.NewBuffer([]byte{})
+	// err = json.Indent(buf, b, "", "  ")
+	// if err != nil {
+	// 	fmt.Fprintf(os.Stderr, "ERROR: (%s) Could not format JSON after fixing source: %s\n", filename, err.Error())
+	// 	os.Exit(2)
+	// }
+
+	ioutil.WriteFile(filename, b, 0666)
+}
+
+func fixSourceErrors(b []byte) []byte {
+
+	b = fixUnquotedKeys.ReplaceAll(b, []byte(`$1"$2"$3`))
+	b = fixSingleQuoteStrings.ReplaceAll(b, []byte(`"$1"`))
+	b = fixTrailingCommas.ReplaceAll(b, []byte(`$1`))
+
 	buf := bytes.NewBuffer([]byte{})
-	err = json.Indent(buf, b, "", "  ")
+
+	err := json.Indent(buf, b, "", "  ")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: (%s) Could not format JSON after fixing source: %s\n", filename, err.Error())
+		fmt.Fprintf(os.Stderr, "ERROR: Could not format JSON after fixing source: %s\n", err.Error())
 		os.Exit(2)
 	}
 
-	ioutil.WriteFile(filename, buf.Bytes(), 0666)
-}
-
-func fixSourceErrors(bytes []byte) []byte {
-
-	bytes = fixUnquotedKeys.ReplaceAll(bytes, []byte(`$1"$2"$3`))
-	bytes = fixSingleQuoteStrings.ReplaceAll(bytes, []byte(`"$1"`))
-	bytes = fixTrailingCommas.ReplaceAll(bytes, []byte(`$1`))
-
-	return bytes
+	return buf.Bytes()
 }

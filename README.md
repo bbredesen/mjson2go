@@ -2,6 +2,8 @@
 
 `mjson2go` is a tool that generates parameterized Go code usable by the MongoDB driver from a JSON pipeline source.
 
+### [Try it in your browser](https://bbredesen.github.io/mjson2go)
+
 Developing a MongoDB pipeline in Go is awkward, with lots of double braces and nested `bson.D` or `bson.A`s. Here is a very simple aggregation pipeline in JSON:
 
 ```json

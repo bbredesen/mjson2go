@@ -1,93 +1,24 @@
 # mjson2go
 
-`mjson2go` is a tool that generates parameterized Go code usable by the MongoDB driver from a JSON pipeline source.
+## Branch: gh-pages
 
-Developing a MongoDB pipeline in Go is awkward, with lots of double braces and nested `bson.D` or `bson.A`s. Here is a very simple aggregation pipeline in JSON:
+This branch of the project exists only to host a demo version of the tool on Github Pages. See the main project at 
 
-```json
-[
-    {
-        "$match" : {
-            "postType" : "Article"
-        }
-    },
-    {
-        "$group" : {
-            "_id" : { "user" : "$userId" },
-            "allPosts": { "$push" : "$$ROOT" },
-            "count" : { "$sum" : 1 }
-        }
-    }
-]
-```
-
-Translated to Go, this becomes:
-
-```go
-pipeline := bson.A{
-    bson.D{
-        { "$match", bson.D{
-            { "postType", "Article" }
-        },
-    }},
-    bson.D{
-        { "$group", bson.D{
-                { "_id", bson.D{
-                    {"user", "$userId"}
-                }},
-                {"allPosts", bson.D{
-                    {"$push", "$$ROOT"}
-                }},
-                {"count", bson.D{
-                    {"$sum", 1}
-                }},
-        }
-    }},
-}
-```
-
-`mjson2go` allows you to export an aggregation pipeline from MongoDB Compass and/or directly develop your pipeline in JSON, instead of trying to copy and paste, translate into Go source, correct syntax, match braces, etc. etc.
-
-`mjson2go` can be used from the command line or, ideally, via `go generate`. The tool produces a Go source file with a "Get___" function that returns a `bson.D` or `bson.A`, and allows you to specify input parameters from your code.
-
-Finally, the tool will format and run `goimports` on the resulting source file.
-
-# Usage
-
-```
-go install github.com/bbredesen/mjson2go@latest
-```
-
-## Via the Command Line
-```
-mjson2go -out=pipeline.go aggregation.json otherAggregation.json
-```
-
-The command above will produce Go source containing functions `GetAggregation()` and `GetOtherAggregation()`. If no files are provided, it will read from stdin and write to stdout. If a directory name is provided, it will process all files ending in .json in that directory.
-
-## Via `go generate`
-The tool will automatically put the resulting code in the same package as the `go:generate` annotation:
-
-```go
-package somepkg
-//go:generate mjson2go -out=pipeline.go aggregations/
-```
-
-Note that `go generate` does not pass commands through a shell and will not expand globs.
+To build: `GOOS=js GOARCH=wasm go build -o mjson2go.wasm`
 
 # Pipeline Parameters
 
 Input parameters can be specified as a string in your JSON file prefixed with "%%", and optionally with a Go type specification and ordering for the function arguments: 
 ```json
 {
-    "index": "%%intParam%int%2",
-    "date": "%%dateParam%time.Time%1"
+    "index": "%%usingIndex%int%2",
+    "date": "%%searchDate%time.Time%1"
 }
 ```
 
 This will produce a function similar to 
 ```go
-func GetAggregation(dateParam time.Time, intParam int) bson.D {
+func GetAggregation(searchDate time.Time, usingIndex int) bson.D {
     // ... 
 }
 ```

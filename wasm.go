@@ -37,12 +37,12 @@ func wrap_buildFunction() js.Func {
 
 		output, err := buildFunction([]byte(input), fnName)
 		if err != nil {
-			fmt.Println("WARNING: Could not build function: ", err.Error())
+			return fmt.Sprint("WARNING: Could not build function: ", err.Error())
 		}
 
 		outputBytes, err := format.Source([]byte(output))
 		if err != nil {
-			fmt.Println("WARNING: Could not format output: ", err.Error())
+			return fmt.Sprint("WARNING: Could not format output from buildFunction: ", err.Error())
 		}
 
 		return string(outputBytes)

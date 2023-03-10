@@ -126,6 +126,13 @@ Corrects three common JSON syntax errors that Compass (and Javascript) may allow
 
 Defaults to true, so you will have to explicitly pass -fix=false to not fix (potential) source errors.
 
+###  `-keys`
+The generated bson.D structs will used keyed field names (`Key:` and `Value:`) in the output. Unkeyed struct
+initializers are legal syntax and (in this context & in my opinion) are easier to read, but many linters complain about
+it. Defaults to true, so you will have to explicitly pass -keys=false to generate unkeyed initializers. 
+
+Option added in v0.3.0 and changes the default behavior of the tool. (Previous versions of mjson2go only generated unkeyed literals.)
+
 ### `-package=pkgname`
 By default, the generated code is in the main package or the value of the `$GOPACAKGE` environment variable (which is set by `go generate`). Setting this flag will override the default name.
 

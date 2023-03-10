@@ -20,7 +20,7 @@ var (
 
 	verbose bool
 
-	backup, fixSource bool
+	backup, fixSource, structKeys bool
 )
 
 func init() {
@@ -29,6 +29,7 @@ func init() {
 	flag.StringVar(&outFilename, "out", "", "filename to write to instead of stdout")
 	flag.BoolVar(&fixSource, "fix", true, "cleans up common JSON syntax errors comming from MongoDB Compass; see README.md for details")
 	flag.BoolVar(&backup, "backup", false, "when used with -fix, writes a copy of the original file before attempting to fix and format")
+	flag.BoolVar(&structKeys, "keys", true, "generate output with keyed struct initialization; unkeyed syntax is legal but your linter may complain")
 }
 
 func main() {
@@ -63,6 +64,11 @@ func main() {
 
 	for _, filename := range inFilenames {
 		outString += buildFunctionFromFile(filename)
+		// In the unusual case that we aren't building a mongo.Pipeline, remove the mongo import. mongo-driver/bson
+		// import will still be present.
+		if !strings.Contains(outString, "mongo.Pipeline") {
+			outString = strings.Replace(outString, `"go.mongodb.org/mongo-driver/mongo"`, ``, 1)
+		}
 	}
 
 	output, err := format.Source([]byte(outString))

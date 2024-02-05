@@ -85,7 +85,7 @@ func buildFunction(bytes []byte, fnName string) (string, error) {
 		// returnType = "bson.A"
 		returnType = "mongo.Pipeline"
 		var didCut bool
-		if body, didCut = strings.CutPrefix(body, "bson.A"); !didCut {
+		if body, didCut = CutPrefix(body, "bson.A"); !didCut {
 			return "", errors.New("Internal Error: Top level array on input did not result in bson.A after initial parse.")
 		}
 
@@ -246,4 +246,17 @@ func (ps paramSlice) Swap(i, j int) {
 }
 func (ps paramSlice) Less(i, j int) bool {
 	return ps[i].index < ps[j].index
+}
+
+// strings.CutPrefix only availavle since go 1.20
+func CutPrefix(s, prefix string) (after string, found bool) {
+	if !HasPrefix(s, prefix) {
+		return s, false
+	}
+	return s[len(prefix):], true
+}
+
+// HasPrefix tests whether the string s begins with prefix.
+func HasPrefix(s, prefix string) bool {
+	return len(s) >= len(prefix) && s[0:len(prefix)] == prefix
 }
